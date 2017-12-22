@@ -6,7 +6,7 @@
 # modules
 
 import numpy as np
-
+from itertools import product
 
 #########################
 # L96 Tendency Function #
@@ -56,6 +56,16 @@ def L96_tendency(t,X,para):
 
 tendency = L96_tendency
 
+from lorenz96_cython import L96_tendency as l96tend_c
+def l96_tend_cw(t,X,p):
+    dx = p['dimX']
+    dy = p['dimY']    
+    h  = p['h']
+    c  = p['c']
+    b  = p['b']
+    return l96tend_c(0.0,X,dx,dy,h,c,b)    
+    
+jacobian = l96_tend_cw
 
 #########################
 # L96 Jacobian Function #
@@ -112,12 +122,93 @@ def L96_jacobian(t,X,para):
     
 #    return np.transpose(np.block([[jacX_X,jacX_Y],
 #                     [jacY_X,jacY_Y]]))
-    return np.bmat([[jacX_X,jacX_Y],
-                     [jacY_X,jacY_Y]])
+    return np.array(np.bmat([[jacX_X,jacX_Y],
+                     [jacY_X,jacY_Y]]))
 
 
-jacobian = L96_jacobian
+from lorenz96_cython import L96_jacobian as l96c
+def l96_cw(t,X,p):
+    dx = p['dimX']
+    dy = p['dimY']    
+    h  = p['h']
+    c  = p['c']
+    b  = p['b']
+    return l96c(0.0,X,dx,dy,h,c,b)    
     
+jacobian = l96_cw
+
+
+
+
+
+
+def L96_bilinear(t,a,b,para):
+    
+    dxy = para['dimY']*para['dimX']
+    
+    ####################
+    #      Indices     #
+    ####################   
+        
+    XI = np.arange(0,para['dimX'])
+    XIm1 = (XI - 1) % para['dimX']
+    XIm2 = (XI - 2) % para['dimX']
+    XIp1 = (XI + 1) % para['dimX']
+    
+    YI = np.arange(0,dxy)
+    YIm1 = ((YI - 1) % dxy) + para['dimX']
+    YIp2 = ((YI + 2) % dxy) + para['dimX']
+    YIp1 = ((YI + 1) % dxy) + para['dimX']   
+    
+    YI = YI  + para['dimX']
+    
+    
+    tX =   np.einsum('ij,jk -> ijk',(a[:,XIp1] - a[:,XIm2]) , b[XIm1,:])      # Advection               
+    tY = - para['c']*para['b']*np.einsum('ij,jk -> ijk',(a[:,YIp2] - a[:,YIm1]),b[YIp1,:])  # Advection
+    
+    return np.concatenate((tX,tY),axis=1)
+
+bilinear = L96_bilinear
+
+def L96_HessMat(t,x,para):
+    
+    dxy = para['dimY']*para['dimX']
+    d = dxy + para['dimX']
+    ####################
+    #      Indices     #
+    ####################   
+        
+    XI = np.arange(0,para['dimX'])
+    XIm1 = (XI - 1) % para['dimX']
+    XIm2 = (XI - 2) % para['dimX']
+    XIp1 = (XI + 1) % para['dimX']
+    
+    YI = np.arange(0,dxy)
+    YIm1 = ((YI - 1) % dxy) + para['dimX']
+    YIp2 = ((YI + 2) % dxy) + para['dimX']
+    YIp1 = ((YI + 1) % dxy) + para['dimX']   
+    
+    YI = YI  + para['dimX']
+    
+    res = np.zeros((d,d,d),dtype=np.float64)
+    for k in np.arange(0,para['dimX']):
+        res[XI[k],XIp1[k],XIm1[k]]=1
+        res[XI[k],XIm1[k],XIp1[k]]=1
+        res[XI[k],XIm2[k],XIm1[k]]=-1
+        res[XI[k],XIm1[k],XIm2[k]]=-1
+    for k in np.arange(0,dxy):
+        res[YI[k],YIp1[k],YIp2[k]]=-para['c']*para['b']
+        res[YI[k],YIp2[k],YIp1[k]]=-para['c']*para['b']
+        res[YI[k],YIp1[k],YIm1[k]]=para['c']*para['b']
+        res[YI[k],YIm1[k],YIp1[k]]=para['c']*para['b']
+    
+    return res
+
+hessian = L96_HessMat
+
+      
+
+
 def L96_stationary_state(para):
     
     x_stat = np.ones(para['dimY']*para['dimX']+para['dimX'])*para['F']
@@ -126,3 +217,5 @@ def L96_stationary_state(para):
 
     
 stationary_state = L96_stationary_state
+
+

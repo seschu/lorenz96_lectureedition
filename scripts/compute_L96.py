@@ -4,10 +4,11 @@
 modulepath = '/scratch/uni/u234/u234069/lorenz96_lectureedition/modules'
 import sys
 sys.path.append(modulepath)
-
+from importlib import reload
 import basics
-import lorenz96 as l96
+import lorenz96 as model
 import ginelli
+reload(ginelli)
 import numpy as np
 import scipy as sp
 import dill 
@@ -16,7 +17,6 @@ import dill
 # Start Experiments  #
 ######################   
  
-model = l96
 
 ######################
 # Setting Parameters #
@@ -25,20 +25,21 @@ model = l96
 basics.niceprint("Setting Parameters")
 
 # p is a dictionary
-p={'dimX' : 20,  # also called K
-   'dimY' : 10,  # also called J
-      'h' : 0.2,   # coupling strength
-      'c' : 10,  # time scale 
-      'b' : 10,  # length scale 
-      'F' : 10}   # forcing
-dt = 0.00001
-rescale_rate = 100
+p={'dimX' : 8,  # also called K
+   'dimY' : 32,  # also called J
+      'h' : np.float64(0.1),   # coupling strength
+      'c' : np.float64(10),  # time scale 
+      'b' : np.float64(10),  # length scale 
+      'F' : np.float64(8)}   # forcing
+
+dt = 0.001
+rescale_rate = dt*2
 print(p)
 
 dim = p['dimX']*p['dimY']+p['dimX']
 
-time_spinup = np.arange(0.0, 0.0, dt*rescale_rate)
-time_mainrun = np.arange(0.0, 0.2, dt*rescale_rate)
+time_spinup = np.arange(0.0, 0.01, dt*rescale_rate)
+time_mainrun = np.arange(0.0, 0.01, dt*rescale_rate)
 
 with open('test', 'wb') as f:
     dill.dump([time_spinup, time_mainrun,p,dt,rescale_rate], f)
@@ -53,4 +54,17 @@ with open('test', 'wb') as f:
 x0 = model.stationary_state(p) # initial state (equilibrium)
 x0 = x0 + np.linalg.norm(x0)*0.1*np.random.rand(dim)
 
-CLV,CLE,BLV,BLE = ginelli.startrun('test',model.tendency, model.jacobian,time_spinup,time_mainrun,x0,dim,p,rescale_rate,dt,'float64')
+GinelliL96 = ginelli.Run('test',model.tendency, model.jacobian,time_spinup,time_mainrun,x0,dim,p,rescale_rate,dt,'float64',memmap = True)
+GinelliL96.ginelli()
+
+GinelliL96.set_convergence_intervall(0,4)
+GinelliL96.check_zero(zeromode=0)
+
+
+import matplotlib.pyplot as plt
+plt.figure();plt.plot(GinelliL96.zerocorr)
+plt.figure();plt.plot(GinelliL96.cle_mean)
+
+
+with open('ginelli_test', 'wb') as f:
+    dill.dump(GinelliL96, f)
