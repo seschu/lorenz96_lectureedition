@@ -4,7 +4,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-root = "/scratch/uni/u234/u234069/lorenz96_lectureedition"
+root = "C:\\Users\Sebastian\Github\lorenz96_lectureedition"
 
 def twist(f):
     return lambda a,b,*args:f(b,a,*args)
