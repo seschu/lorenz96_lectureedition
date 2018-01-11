@@ -13,7 +13,7 @@ class Run():
         
         # experiment folder defined
         self.expname = expname
-        self.expfolder = basics.root+"/runs/"+self.expname
+        self.expfolder = basics.root+"\runs\"+self.expname
         self.existing = existing
         if not os.path.exists(self.expfolder): 
             if not existing: os.mkdir(self.expfolder)
@@ -24,17 +24,17 @@ class Run():
         # define memory maps
         self.order = 'C'
         if memmap:
-            self.x  = np.memmap(self.expfolder +'/x.dat',dtype = precision, order = self.order, shape = (len(time_mainrun), dim), mode = writemode)
+            self.x  = np.memmap(self.expfolder +'\x.dat',dtype = precision, order = self.order, shape = (len(time_mainrun), dim), mode = writemode)
             
-            self.BLV = np.memmap(self.expfolder +'/blv.dat',dtype = precision, order = self.order, shape = (len(time_mainrun), dim, dim), mode = writemode)
+            self.BLV = np.memmap(self.expfolder +'\blv.dat',dtype = precision, order = self.order, shape = (len(time_mainrun), dim, dim), mode = writemode)
             
-            self.BLE = np.memmap(self.expfolder +'/ble.dat',dtype = precision, order = self.order, shape = (len(time_mainrun), dim), mode = writemode)
+            self.BLE = np.memmap(self.expfolder +'\ble.dat',dtype = precision, order = self.order, shape = (len(time_mainrun), dim), mode = writemode)
             
-            self.CLV = np.memmap(self.expfolder +'/clv.dat',dtype = precision, order = self.order, shape = (len(time_mainrun), dim, dim), mode = writemode)
+            self.CLV = np.memmap(self.expfolder +'\clv.dat',dtype = precision, order = self.order, shape = (len(time_mainrun), dim, dim), mode = writemode)
             
-            self.CLE = np.memmap(self.expfolder +'/cle.dat',dtype = precision, order = self.order, shape = (len(time_mainrun), dim), mode = writemode)
+            self.CLE = np.memmap(self.expfolder +'\cle.dat',dtype = precision, order = self.order, shape = (len(time_mainrun), dim), mode = writemode)
             
-            self.R = np.memmap(self.expfolder +'/r.dat',dtype = precision, order = self.order, shape = (len(time_mainrun), dim, dim), mode = writemode)
+            self.R = np.memmap(self.expfolder +'\r.dat',dtype = precision, order = self.order, shape = (len(time_mainrun), dim, dim), mode = writemode)
         else:
             self.x  = np.zeros((len(time_mainrun), dim))
             
@@ -207,7 +207,7 @@ class Run():
             zeromode = self.zeromode
         else:
             self.zeromode = zeromode
-        self.zerocorr = np.memmap(self.expfolder +'/zerocorr.dat',dtype = self.precision, order = self.order, shape = (len(self.time_mainrun),), mode = 'w+')
+        self.zerocorr = np.memmap(self.expfolder +'\zerocorr.dat',dtype = self.precision, order = self.order, shape = (len(self.time_mainrun),), mode = 'w+')
         time = self.time_mainrun
         for nstep ,( told , tnew ) in enumerate(zip(time[0:-1],time[1:])):
             zeroLV = self.CLV[nstep,:,self.zeromode]

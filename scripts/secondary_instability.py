@@ -1,5 +1,6 @@
-#!/usr/bin/env python3
-modulepath = '/scratch/uni/u234/u234069/lorenz96_lectureedition/modules'
+# -*- coding: utf-8 -*-
+
+modulepath = 'C:\\Users\Sebastian\Github\lorenz96_lectureedition\modules'
 import sys
 sys.path.append(modulepath)
 from importlib import reload
@@ -30,7 +31,7 @@ secondorder = np.memmap(results.expfolder +'/secondorder.dat',dtype = results.pr
 
 
 #
-# optimize numpy einsum
+# optimize numpy einsum5
 #
 it = 0
 hessian = testbi.hessian(t,results.x[it,:],results.dt)

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-modulepath = '/scratch/uni/u234/u234069/lorenz96_lectureedition/modules'
+modulepath = 'C:\Users\Sebastian\Github\lorenz96_lectureedition\modules'
 import sys
 sys.path.append(modulepath)
 from importlib import reload
