@@ -4,7 +4,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-root = "/scratch/uni/u234/u234069/lorenz96_lectureedition"
+root = "/scratch/local1/lorenz96_lectureedition"
 
 def twist(f):
     return lambda a,b,*args:f(b,a,*args)
@@ -461,9 +461,10 @@ class test_bilinear():
         
     def do_test(self, scale = 1, T = 0.001, dt = 0.001, rescale = False,Ihessian = None,Vhessian = None, sparse = False):
         
+        """
+        """
         if sparse:
             if not isinstance(Ihessian,type(None)) and not isinstance(Vhessian,type(None)):
-                print('Here')
                 self.Ihessian = Ihessian
                 self.Vhessian = Vhessian
             else:

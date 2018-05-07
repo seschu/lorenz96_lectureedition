@@ -9,7 +9,7 @@ import basics
 import os
 
 class Run():
-    def __init__(self,expname,tendency,jacobian,time_spinup,time_mainrun,x0,dim,p,rescale_rate,dt, existing = False, precision = 'float64', memmap = True):
+    def __init__(self,expname,tendency,jacobian,time_spinup,time_mainrun,x0,dim,p,rescale_rate,dt, existing = False, memmap = True, precision = 'float64'):
         
         # experiment folder defined
         self.expname = expname
@@ -22,7 +22,7 @@ class Run():
         writemode = 'r+' if existing else 'w+'
         
         # define memory maps
-        self.order = 'C'
+        self.order = 'F'
         if memmap:
             self.x  = np.memmap(self.expfolder +'/x.dat',dtype = precision, order = self.order, shape = (len(time_mainrun), dim), mode = writemode)
             
