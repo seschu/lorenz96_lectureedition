@@ -51,20 +51,19 @@ def L96_tendency(t,np.ndarray[double, ndim=1, mode='c'] X not None,dx,dy,h,c,b,F
         
     xi=dx-1
     tendency[xi] =      (X[0] - X[xi-2]) * X[xi - 1] - X[xi] + F - h*c/b*np.sum(X[dx + dy*xi:dx + dy*(xi+1)])
+     
+    if dy > 0:
+        yi = dx
+        tendency[yi] = -c*b*(X[yi + 2] - X[dx+dxy - 1]) * X[yi + 1] - c*X[yi] + h*c/b*X[int(floor((yi-dx)/dy))]
         
-    yi = dx
-    tendency[yi] = -c*b*(X[yi + 2] - X[dx+dxy - 1]) * X[yi + 1] - c*X[yi] + h*c/b*X[int(floor((yi-dx)/dy))]
-    
-    for yi in range(dx+1,dx+dxy-2):
-        tendency[yi] = -c*b*(X[yi + 2] - X[yi - 1]) * X[yi + 1] - c*X[yi] + h*c/b*X[int(floor((yi-dx)/dy))]
-    
-    yi = dx+dxy-2
-    tendency[yi] = -c*b*(X[dx] - X[yi - 1]) * X[yi + 1] - c*X[yi]  + h*c/b*X[int(floor((yi-dx)/dy))]
-    
-    yi = dx+dxy-1
-    tendency[yi] = -c*b*(X[dx + 1] - X[yi - 1]) * X[dx] - c*X[yi]  + h*c/b*X[int(floor((yi-dx)/dy))]
-    
-    
+        for yi in range(dx+1,dx+dxy-2):
+            tendency[yi] = -c*b*(X[yi + 2] - X[yi - 1]) * X[yi + 1] - c*X[yi] + h*c/b*X[int(floor((yi-dx)/dy))]
+        
+        yi = dx+dxy-2
+        tendency[yi] = -c*b*(X[dx] - X[yi - 1]) * X[yi + 1] - c*X[yi]  + h*c/b*X[int(floor((yi-dx)/dy))]
+        
+        yi = dx+dxy-1
+        tendency[yi] = -c*b*(X[dx + 1] - X[yi - 1]) * X[dx] - c*X[yi]  + h*c/b*X[int(floor((yi-dx)/dy))]
     return tendency
 
 
@@ -112,39 +111,39 @@ def L96_jacobian(t,np.ndarray[double, ndim=1, mode='c'] X not None,dx,dy,h,c,b):
     for yi in range(dx + (dx-1)*dy,dx + dx*dy):
         jacobian[dx-1,yi] = - h*c/b
 
-
-    yi = dx
-    jacobian[yi,yi] = -c
-    jacobian[yi,yi+1] = -c*b*(X[yi+2]-X[dx*dy+dx-1])
-    jacobian[yi,yi+2] = -c*b*X[yi+1]
-    jacobian[yi,dx*dy+dx-1] =  c*b*X[yi+1]
-    jacobian[yi,0] =  h*c/b
-
-    
-    for yi in range(dx+1,dx+dxy-2):
-        
-        jacobian[yi,yi]   = -c
-        jacobian[yi,yi+1] = -c*b*(X[yi+2]-X[yi-1])
+    if dy > 0:
+        yi = dx
+        jacobian[yi,yi] = -c
+        jacobian[yi,yi+1] = -c*b*(X[yi+2]-X[dx*dy+dx-1])
         jacobian[yi,yi+2] = -c*b*X[yi+1]
+        jacobian[yi,dx*dy+dx-1] =  c*b*X[yi+1]
+        jacobian[yi,0] =  h*c/b
+    
+        
+        for yi in range(dx+1,dx+dxy-2):
+            
+            jacobian[yi,yi]   = -c
+            jacobian[yi,yi+1] = -c*b*(X[yi+2]-X[yi-1])
+            jacobian[yi,yi+2] = -c*b*X[yi+1]
+            jacobian[yi,yi-1] =  c*b*X[yi+1]
+            xi = int(floor((yi-dx)/dy))
+            jacobian[yi,xi] =  h*c/b
+    
+        yi = dx+dxy-2
+        jacobian[yi,yi] = -c
+        jacobian[yi,yi+1] = -c*b*(X[dx]-X[yi-1])
+        jacobian[yi,dx  ]   = -c*b*X[yi+1]
         jacobian[yi,yi-1] =  c*b*X[yi+1]
         xi = int(floor((yi-dx)/dy))
         jacobian[yi,xi] =  h*c/b
-
-    yi = dx+dxy-2
-    jacobian[yi,yi] = -c
-    jacobian[yi,yi+1] = -c*b*(X[dx]-X[yi-1])
-    jacobian[yi,dx  ]   = -c*b*X[yi+1]
-    jacobian[yi,yi-1] =  c*b*X[yi+1]
-    xi = int(floor((yi-dx)/dy))
-    jacobian[yi,xi] =  h*c/b
-
-    yi = dx+dxy-1
-    jacobian[yi,yi] = -c
-    jacobian[yi,dx] =   -c*b*(X[dx+1]-X[yi-1])
-    jacobian[yi,dx+1] = -c*b*X[dx]
-    jacobian[yi,yi-1] =  c*b*X[dx]
-    xi = int(floor((yi-dx)/dy))
-    jacobian[yi,xi] =  h*c/b
+    
+        yi = dx+dxy-1
+        jacobian[yi,yi] = -c
+        jacobian[yi,dx] =   -c*b*(X[dx+1]-X[yi-1])
+        jacobian[yi,dx+1] = -c*b*X[dx]
+        jacobian[yi,yi-1] =  c*b*X[dx]
+        xi = int(floor((yi-dx)/dy))
+        jacobian[yi,xi] =  h*c/b
 
     return jacobian
 
